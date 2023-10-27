@@ -19,12 +19,11 @@ def BarcodeReader(img):
 
     PatientIdImage = img[0:y // 2, 0:x // 2] #Reads patient id
     PatientId = decode(PatientIdImage)
-    #cv2.imshow('image', draw)
-    #cv2.waitKey(0)
     if len(PatientId) == 1:
         PatientIdText = ((PatientId[0]).data).decode("utf-8")
-        img = cv2.polylines(img, [np.array(PatientId[0].polygon)], True, (0, 255, 0), 2)
-        img = cv2.putText(img, PatientId[0].data.decode(), (PatientId[0].rect.left, PatientId[0].rect.top + PatientId[0].rect.height), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1, cv2.LINE_AA)
+        img = cv2.polylines(img, [np.array(PatientId[0].polygon)], True, (0, 255, 0), 5)
+        write = "Read barcode: " + PatientIdText
+        img = cv2.putText(img, write, (100, 260), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3, cv2.LINE_AA)
     else:
         print(f"Barcode not found: {image}")
         if input("Would you like to enter manually: ") == 'y':
