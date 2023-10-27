@@ -175,7 +175,7 @@ _**Note:** If you face a distutils error in pip, use `--ignore-installed` flag i
 <!-- Wiki should not get cloned -->
 
 ### 3. Run the code
-
+0. Add files to add-files/ folder.
 1. First copy and examine the sample data to know how to structure your inputs:
    ```bash
    cp -r ./samples/sample1 inputs/

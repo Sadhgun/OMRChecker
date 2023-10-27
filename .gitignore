@@ -2,7 +2,6 @@
 **/\.*/
 # Except .github
 !.github/
-!add-files/
 
 # Everything in add-files/, inputs/ and outputs/
 add-files/*
