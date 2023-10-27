@@ -7,6 +7,7 @@
 add-files/*
 inputs/*
 outputs/*
+Tests/*
 
 # Misc
 **/.DS_Store
