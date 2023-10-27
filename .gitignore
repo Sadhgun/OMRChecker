@@ -3,7 +3,8 @@
 # Except .github
 !.github/
 
-# Everything in inputs/ and outputs/
+# Everything in add-files/, inputs/ and outputs/
+add-files/*
 inputs/*
 outputs/*
 
