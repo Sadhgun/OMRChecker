@@ -190,9 +190,11 @@ def show_template_layouts(omr_files, template, tuning_config):
         template_layout = template.image_instance_ops.draw_template_layout(
             in_omr, template, shifted=False, border=2
         )
-        InteractionUtils.show(
-            f"Template Layout: {file_name}", template_layout, 1, 1, config=tuning_config
+        img = InteractionUtils.show(
+            f"Template Layout: {file_name}", template_layout, 1, 1, config=tuning_config, returnImage=True
         )
+        imgOut = file_path[:-4] + "SetLayout.png"
+        cv2.imwrite(imgOut, img)
 
 
 def process_files(

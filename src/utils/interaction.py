@@ -24,7 +24,7 @@ class InteractionUtils:
     image_metrics = ImageMetrics()
 
     @staticmethod
-    def show(name, origin, pause=1, resize=False, reset_pos=None, config=None):
+    def show(name, origin, pause=1, resize=False, reset_pos=None, config=None, returnImage=False):
         image_metrics = InteractionUtils.image_metrics
         if origin is None:
             logger.info(f"'{name}' - NoneType image to show!")
@@ -38,7 +38,10 @@ class InteractionUtils:
         else:
             img = origin
 
-        cv2.imshow(name, img)
+        if returnImage == True:
+            return img
+        else:
+            cv2.imshow(name, img)
 
         if reset_pos:
             image_metrics.window_x = reset_pos[0]
