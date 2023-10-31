@@ -3,10 +3,12 @@
 # Except .github
 !.github/
 
-# Everything in add-files/, inputs/ and outputs/
+# Everything in Directories/ for adding files
 add-files/*
+backup/*
 inputs/*
 outputs/*
+QRCodes/*
 Tests/*
 
 # Misc
