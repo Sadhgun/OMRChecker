@@ -20,7 +20,7 @@ for i in range(1, pages + 1):
     box.paste(img, (0, 0))
     draw = ImageDraw.Draw(box)
     font = ImageFont.truetype(r'Roboto-Regular.ttf', 50)
-    dimensions = draw.textbbox((0, 0), f'Page No: {i}', font=font)
-    draw.multiline_text(((width - dimensions[2]) // 2, height), f'Page No: {i}', fill=0, font=font)
+    dimensions = draw.textbbox((0, 0), f'Page No: {i} out of {pages}', font=font)
+    draw.multiline_text(((width - dimensions[2]) // 2, height), f'Page No: {i} out of {pages}', fill=0, font=font)
     dest = f'QRCodes/Page{i}.png'
     box.save(dest)
