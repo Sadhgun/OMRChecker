@@ -9,13 +9,13 @@ def BarcodeReader(img):
     SideImage = img[0:y // 2, x // 2:x] #Reads page side
     side = decode(SideImage)
     if len(side) == 1:
-        side = ((side[0]).data).decode("utf-8")
+        side = eval(((side[0]).data).decode("utf-8"))
     else:
         if y / x >= 1: #Checks if page is vertical
             img = cv2.rotate(img, cv2.ROTATE_180)
             SideImage = img[0:y // 2, x // 2:x]
             side = decode(SideImage)
-        side = ((side[0]).data).decode("utf-8")
+        side = eval(((side[0]).data).decode("utf-8"))
 
     PatientIdImage = img[0:y // 2, 0:x // 2] #Reads patient id
     PatientId = decode(PatientIdImage)
@@ -34,57 +34,78 @@ def BarcodeReader(img):
             return 0
     
     #Sort image into input folders
-    if side == 'Back':
-        dest = "inputs/back/" + PatientIdText + ".png"
-    elif side == 'Front':
-        dest = "inputs/front/" + PatientIdText + ".png"
+    #print(side["Name"], side["Page No"])
+    destDir = "inputs/" + side["Name"] + "/Page" + str(side["Page No"]) + "/"
+    if not(os.path.exists(destDir)):
+        os.makedirs(destDir)
+    dest = destDir + PatientIdText + ".png"
     cv2.imwrite(dest, img)
     return 1
 
 def MissingFileChecker():
-    FrontFolder = "inputs/front/"
-    BackFolder = "inputs/back/"
-
-    fronts = os.listdir(FrontFolder)
-    backs = os.listdir(BackFolder)
-
-    print('Backs missing: ', end="")
-    print(list(set(fronts).difference(backs)))
-
-    print('Fronts missing: ', end="")
-    print(list(set(backs).difference(fronts)))
- 
-def BackupImages():
-    FrontsFolder = "inputs/front/"
-    BacksFolder = "inputs/back/"
-    FrontBackup = "backup/inputs/front/"
-    BackBackup = "backup/inputs/back/"
+    cwd = os.getcwd()
+    inputsFolder = cwd + "/inputs/"
     if not(os.path.exists("backup/")):
         os.mkdir("backup/")
-        os.mkdir("backup/inputs/")
-    if not(os.path.exists("backup/inputs/")):
-        os.mkdir("backup/inputs/")
-    if not(os.path.exists(FrontBackup)):
-        os.mkdir(FrontBackup)
-    if not(os.path.exists(BackBackup)):
-        os.mkdir(BackBackup)
-    for file in os.listdir(FrontsFolder):
-        if file.endswith('.png'):
-            src = FrontsFolder + file
-            shutil.move(src, FrontBackup)
-    for file in os.listdir(BacksFolder):
-        if file.endswith('.png'):
-            src = BacksFolder + file
-            shutil.move(src, BackBackup)
+    dirs = os.listdir(inputsFolder)
+    for dir in dirs:
+        projectName = inputsFolder + dir
+        if os.path.isdir(projectName):
+            imageLists = []
+            subDirs = os.listdir(projectName)
+            subDirs.sort()
+            for page in subDirs:
+                pageNo = projectName + "/" + page
+                if os.path.isdir(pageNo):
+                    files = os.listdir(pageNo)
+                    imageList = []
+                    for file in files:
+                        if file.endswith(".png"):
+                            imageList.append(file)
+                    imageLists.append(imageList)
+    totalPages = len(imageLists)
+    differenceDict = {}
+    for i in range(totalPages):
+        for n in range(i + 1, totalPages):
+            frontDiff = list(set(imageLists[n]).difference(imageLists[i]))
+            backDiff = list(set(imageLists[i]).difference(imageLists[n]))
+            if differenceDict.get(i + 1) is not None:
+                differenceDict[i + 1] += frontDiff
+            else:
+                differenceDict[i + 1] = frontDiff
+            if differenceDict.get(n + 1) is not None:
+                differenceDict[n + 1] += backDiff
+            else:
+                differenceDict[n + 1] = backDiff
+    for key in differenceDict:
+        print(f"Page {key} of {sorted(list(set(differenceDict[key])))} are missing.")
+ 
+def BackupImages():
+    cwd = os.getcwd()
+    inputsFolder = cwd + "/inputs/"
+    if not(os.path.exists("backup/")):
+        os.mkdir("backup/")
+    dirs = os.listdir(inputsFolder)
+    for dir in dirs:
+        projectName = inputsFolder + dir
+        if os.path.isdir(projectName):
+            subDirs = os.listdir(projectName)
+            for page in subDirs:
+                pageNo = projectName + "/" + page
+                if os.path.isdir(pageNo):
+                    files = os.listdir(pageNo)
+                    for file in files:
+                        if file.endswith('.png'):
+                            image = pageNo + "/" + file
+                            dest = "backup/inputs/" + dir + "/" + page
+                            if not(os.path.exists(dest)):
+                                os.makedirs(dest)
+                            shutil.move(image, dest)
+    #TODO: Move output files
 
 if __name__ == "__main__":
     folder = "add-files/"
     files = os.listdir(folder)
-
-    if not(os.path.exists("inputs/front/")):
-        os.mkdir("inputs/front/")
-    if not(os.path.exists("inputs/back/")):
-        os.mkdir("inputs/back/")
 
     for file in files:
         if file.endswith('.png'):
