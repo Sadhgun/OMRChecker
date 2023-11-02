@@ -3,6 +3,7 @@ from pyzbar.pyzbar import decode
 import os
 import shutil
 import numpy as np
+import pandas as pd
 
 def BarcodeReader(img):
     y, x, z = img.shape
@@ -103,6 +104,35 @@ def BackupImages():
                             shutil.move(image, dest)
     #TODO: Move output files
 
+def CheckForOthers():
+    OutputFolder = os.getcwd() + "/outputs/"
+    Projects = os.listdir(OutputFolder)
+    Projects.sort()
+    for project in Projects:
+        ProjectDir = OutputFolder + project + "/"
+        Pages = os.listdir(ProjectDir)
+        Pages.sort()
+        for page in Pages:
+            csv = ProjectDir + page + "/Results/Results.csv"
+            df = pd.read_csv(csv)
+            if "q15" in list(df.columns):
+                others = df.loc[df["q15"] == "yes"]
+                others = others["output_path"].tolist()
+                for image in others:
+                    img = cv2.imread(image)
+                    img = img[320:380, 640:970]
+                    dest = csv.replace("Results/Results.csv", "")
+                    dest = dest.replace(os.getcwd(), "")
+                    image = "/" + image
+                    image = image.replace(dest, "")
+                    image = image.replace("CheckedOMRs", "")
+                    dest = dest + "OthersFolder"
+                    dest = os.getcwd() + dest
+                    if not(os.path.exists(dest)):
+                        os.makedirs(dest)
+                    dest += image
+                    cv2.imwrite(dest, img)
+
 if __name__ == "__main__":
     folder = "add-files/"
     files = os.listdir(folder)
@@ -118,3 +148,4 @@ if __name__ == "__main__":
     if ans == 'y':
         os.system("python main.py")
         BackupImages()
+        CheckForOthers()
