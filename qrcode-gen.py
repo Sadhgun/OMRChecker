@@ -6,7 +6,7 @@ pages = int(input("Enter number of pages: "))
 
 for i in range(1, pages + 1):
     qr = qrcode.QRCode(
-        version=10,
+        version=10, #TODO: Check version options
         error_correction=qrcode.constants.ERROR_CORRECT_H,
         box_size=10,
         border=0
@@ -16,7 +16,7 @@ for i in range(1, pages + 1):
     qr.make()
     img = qr.make_image(fill_color="black", back_color="white")
     width, height = img.size
-    box = Image.new(mode="RGB", size=(width, height + 130), color = (255, 255, 255))
+    box = Image.new(mode="RGB", size=(width, height + 130), color = (255, 255, 255)) #TODO: Check required resolution
     box.paste(img, (0, 0))
     draw = ImageDraw.Draw(box)
     font = ImageFont.truetype(r'Roboto-Regular.ttf', 120)
