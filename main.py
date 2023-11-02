@@ -87,11 +87,13 @@ def entry_point_for_args(args):
     if args["debug"] is True:
         # Disable tracebacks
         sys.tracebacklimit = 0
+    print(args)
     for root in args["input_paths"]:
         entry_point(
             Path(root),
             args,
         )
+        print(root)
 
 
 if __name__ == "__main__":
