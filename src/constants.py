@@ -37,6 +37,10 @@ FIELD_TYPES = {
         "bubbleValues": ["A", "B", "C", "D", "E"],
         "direction": "horizontal",
     },
+    "QTYPE_Sex": {
+        "bubbleValues": ["M", "F"],
+        "direction": "horizontal",
+    },
     #
     # You can create and append custom field types here-
     #
