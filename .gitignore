@@ -1,18 +1,20 @@
-# Any directory starting with a dot
-**/\.*/
-# Except .github
 !.github/
-
+# Any directory starting with a dot
 # Everything in Directories/ for adding files
+# Except .github
+# Misc
+**/.DS_Store
+**/\.*/
+**/__pycache__
+*.db
+*.py[cod]
+.web
+OMRChecker.wiki/
+QRCodes/*
+Tests/*
+__pycache__/
 add-files/*
 backup/*
 inputs/*
 outputs/*
-QRCodes/*
-Tests/*
-
-# Misc
-**/.DS_Store
-**/__pycache__
 venv/
-OMRChecker.wiki/
