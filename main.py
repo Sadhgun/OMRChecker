@@ -93,7 +93,9 @@ def entry_point_for_args(args):
             Path(root),
             args,
         )
+        print(Path(root))
         print(root)
+        print(args)
 
 
 if __name__ == "__main__":

@@ -119,10 +119,7 @@ class ImageInstanceOps:
                 # _, morph_h = cv2.threshold(morph_h,morph_thr,255,cv2.THRESH_BINARY)
                 # morph_h = cv2.erode(morph_h,  np.ones((5,5),np.uint8), iterations = 2)
                 if config.outputs.show_image_level >= 3:
-                    InteractionUtils.show(
-                        "morph_thr_eroded", morph_v, 0, 1, config=config
-                    )
-
+                    InteractionUtils.show("morph_thr_eroded", morph_v, 0, 1, config=config)
                 self.append_save_img(6, morph_v)
 
                 # template relative alignment code

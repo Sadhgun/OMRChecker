@@ -4,8 +4,13 @@ import os
 import shutil
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
-def BarcodeReader(img):
+from src.entry import entry_point
+
+def BarcodeReader(file):
+    image = "add-files/" + file
+    img = cv2.imread(image)
     y, x, z = img.shape
     SideImage = img[0:y // 2, x // 2:x] #Reads page side
     side = decode(SideImage)
@@ -26,11 +31,11 @@ def BarcodeReader(img):
         write = "Read barcode: " + PatientIdText
         img = cv2.putText(img, write, (100, 260), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3, cv2.LINE_AA)
     else:
-        print(f"Barcode not found: {image}")
-        if input("Would you like to enter manually: ") == 'y':
+        print(f"Barcode not found: {file}")
+        if input("Would you like to enter manually (y/n): ") == 'y':
             #cv2.imshow('Enter barcode', PatientIdImage)
             #cv2.waitKey(0)
-            PatientId = input("Barcode: ")
+            PatientIdText = input("Barcode: ")
         else:
             return 0
     
@@ -65,21 +70,25 @@ def MissingFileChecker():
                             imageList.append(file)
                     imageLists.append(imageList)
     totalPages = len(imageLists)
-    differenceDict = {}
-    for i in range(totalPages):
-        for n in range(i + 1, totalPages):
-            frontDiff = list(set(imageLists[n]).difference(imageLists[i]))
-            backDiff = list(set(imageLists[i]).difference(imageLists[n]))
-            if differenceDict.get(i + 1) is not None:
-                differenceDict[i + 1] += frontDiff
-            else:
-                differenceDict[i + 1] = frontDiff
-            if differenceDict.get(n + 1) is not None:
-                differenceDict[n + 1] += backDiff
-            else:
-                differenceDict[n + 1] = backDiff
-    for key in differenceDict:
-        print(f"Page {key} of {sorted(list(set(differenceDict[key])))} are missing.")
+    if totalPages > 1:
+        differenceDict = {}
+        for i in range(totalPages):
+            for n in range(i + 1, totalPages):
+                frontDiff = list(set(imageLists[n]).difference(imageLists[i]))
+                backDiff = list(set(imageLists[i]).difference(imageLists[n]))
+                if differenceDict.get(i + 1) is not None:
+                    differenceDict[i + 1] += frontDiff
+                else:
+                    differenceDict[i + 1] = frontDiff
+                if differenceDict.get(n + 1) is not None:
+                    differenceDict[n + 1] += backDiff
+                else:
+                    differenceDict[n + 1] = backDiff
+        for key in differenceDict:
+            if len(sorted(list(set(differenceDict[key])))) > 0:
+                print(f"Page {key} of {sorted(list(set(differenceDict[key])))} are missing.")
+    else:
+        print("Single page project")
  
 def BackupImages():
     cwd = os.getcwd()
@@ -139,13 +148,11 @@ if __name__ == "__main__":
 
     for file in files:
         if file.endswith('.png'):
-            image = "add-files/" + file
-            img = cv2.imread(image)
-            BarcodeReader(img)
+            BarcodeReader(file)
 
     MissingFileChecker()
     ans = str(input("Would you like to continue (y/n): "))
     if ans == 'y':
-        os.system("python main.py")
+        entry_point(Path('inputs'), {'input_paths': ['inputs'], 'debug': True, 'output_dir': 'outputs', 'autoAlign': False, 'setLayout': False})
         BackupImages()
         CheckForOthers()
