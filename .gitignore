@@ -17,4 +17,3 @@ add-files/*
 backup/*
 inputs/*
 outputs/*
-venv/
