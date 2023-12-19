@@ -15,5 +15,6 @@ Tests/*
 __pycache__/
 add-files/*
 backup/*
+config-json/*
 inputs/*
 outputs/*
