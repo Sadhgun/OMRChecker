@@ -2,11 +2,13 @@ import cv2
 from pyzbar.pyzbar import decode
 import os
 import shutil
+import datetime
+
 import numpy as np
 import pandas as pd
 from pathlib import Path
-
 from src.entry import entry_point
+from src.utils.interaction import wait_q
 
 def BarcodeReader(file):
     image = "add-files/" + file
@@ -32,15 +34,15 @@ def BarcodeReader(file):
         img = cv2.putText(img, write, (100, 260), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3, cv2.LINE_AA)
     else:
         print(f"Barcode not found: {file}")
-        if input("Would you like to enter manually (y/n): ") == 'y':
-            #cv2.imshow('Enter barcode', PatientIdImage)
-            #cv2.waitKey(0)
+        if input("Would you like to enter manually (y/n): ") != 'n':
+            cv2.imshow('Enter barcode', PatientIdImage)
+            print(f"Showing '{file}'\nPress Q on image to continue.")
+            wait_q()
             PatientIdText = input("Barcode: ")
         else:
             return 0
     
     #Sort image into input folders
-    #print(side["Name"], side["Page No"])
     destDir = "inputs/" + side["Name"] + "/Page" + str(side["Page No"]) + "/"
     if not(os.path.exists(destDir)):
         os.makedirs(destDir)
@@ -93,6 +95,8 @@ def MissingFileChecker():
 def BackupImages():
     cwd = os.getcwd()
     inputsFolder = cwd + "/inputs/"
+    time = datetime.datetime.now()
+    time_dir = time.strftime("%H:%M--(%d-%b-%Y)")
     if not(os.path.exists("backup/")):
         os.mkdir("backup/")
     dirs = os.listdir(inputsFolder)
@@ -107,7 +111,7 @@ def BackupImages():
                     for file in files:
                         if file.endswith('.png'):
                             image = pageNo + "/" + file
-                            dest = "backup/inputs/" + dir + "/" + page
+                            dest = "backup/" + dir + "/" + time_dir + "/inputs/" + page
                             if not(os.path.exists(dest)):
                                 os.makedirs(dest)
                             shutil.move(image, dest)
@@ -129,7 +133,7 @@ def CheckForOthers():
                 others = others["output_path"].tolist()
                 for image in others:
                     img = cv2.imread(image)
-                    img = img[635:705, 545:735]
+                    img = img[635:705, 545:735] #TODO: Add to JSON
                     dest = csv.replace("Results/Results.csv", "")
                     dest = dest.replace(os.getcwd(), "")
                     image = "/" + image
@@ -152,7 +156,7 @@ if __name__ == "__main__":
 
     MissingFileChecker()
     ans = str(input("Would you like to continue (y/n): "))
-    if ans == 'y':
+    if ans != 'n':
         entry_point(Path('inputs'), {'input_paths': ['inputs'], 'debug': True, 'output_dir': 'outputs', 'autoAlign': False, 'setLayout': False})
         BackupImages()
         CheckForOthers()
