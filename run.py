@@ -127,27 +127,26 @@ def BackupImages():
                     dest = "backup/" + dir + "/" + time_dir + "/outputs/" + page
                     shutil.move(pageNo, dest)
 
-def CheckForOthers(project, page, item, x1, x2, y1, y2):
+def CaptureOthersBox(project, page, item, x1, x2, y1, y2):
     OutputFolder = os.getcwd() + "/outputs/" + project + "/" + page
     csv = OutputFolder + "/Results/Results.csv"
     df = pd.read_csv(csv)
-    if item in list(df.columns):
-        others = df.loc[df[item] == 1]
-        others = others["output_path"].tolist()
-        for image in others:
-            img = cv2.imread(image)
-            img = img[x1:x2, y1:y2]
-            dest = csv.replace("Results/Results.csv", "")
-            dest = dest.replace(os.getcwd(), "")
-            image = "/" + image
-            image = image.replace(dest, "")
-            image = image.replace("CheckedOMRs", "")
-            dest = dest + "OthersFolder"
-            dest = os.getcwd() + dest
-            if not(os.path.exists(dest)):
-                os.makedirs(dest)
-                dest += image
-                cv2.imwrite(dest, img)
+    others = df.loc[df[item] == 1]
+    others = others["output_path"].tolist()
+    for image in others:
+        img = cv2.imread(image)
+        img = img[x1:x2, y1:y2]
+        dest = csv.replace("Results/Results.csv", "")
+        dest = dest.replace(os.getcwd(), "")
+        image = "/" + image
+        image = image.replace(dest, "")
+        image = image.replace("CheckedOMRs", "")
+        dest = dest + "OthersFolder"
+        dest = os.getcwd() + dest
+        if not(os.path.exists(dest)):
+            os.makedirs(dest)
+            dest += image
+            cv2.imwrite(dest, img)
 
 def CallForOthers(Projects):
     for project in Projects:
@@ -162,7 +161,7 @@ def CallForOthers(Projects):
                 Others = Page["others"]
                 for item in Others:
                     x1, x2, y1, y2 = Others[item]['x1'], Others[item]['x2'], Others[item]['y1'], Others[item]['y2']
-                    CheckForOthers(project, page, item, x1, x2, y1, y2)
+                    CaptureOthersBox(project, page, item, x1, x2, y1, y2)
 
 if __name__ == "__main__":
     folder = "add-files/"
