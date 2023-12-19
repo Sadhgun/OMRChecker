@@ -97,11 +97,12 @@ def MissingFileChecker():
 def BackupImages():
     cwd = os.getcwd()
     inputsFolder = cwd + "/inputs/"
+    outputsFolder = cwd + "/outputs/"
     time = datetime.datetime.now()
     time_dir = time.strftime("%H:%M:%S--(%d-%b-%Y)")
     if not(os.path.exists("backup/")):
         os.mkdir("backup/")
-    dirs = os.listdir(inputsFolder)
+    dirs = os.listdir(outputsFolder)
     for dir in dirs:
         projectName = inputsFolder + dir
         if os.path.isdir(projectName):
@@ -117,7 +118,14 @@ def BackupImages():
                             if not(os.path.exists(dest)):
                                 os.makedirs(dest)
                             shutil.move(image, dest)
-    #TODO: Move output files
+        projectName = outputsFolder + dir
+        if os.path.isdir(projectName):
+            subDirs = os.listdir(projectName)
+            for page in subDirs:
+                pageNo = projectName + "/" + page
+                if os.path.isdir(pageNo):
+                    dest = "backup/" + dir + "/" + time_dir + "/outputs/" + page
+                    shutil.move(pageNo, dest)
 
 def CheckForOthers(project, page, item, x1, x2, y1, y2):
     OutputFolder = os.getcwd() + "/outputs/" + project + "/" + page
