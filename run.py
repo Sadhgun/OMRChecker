@@ -124,12 +124,12 @@ def CheckForOthers():
         for page in Pages:
             csv = ProjectDir + page + "/Results/Results.csv"
             df = pd.read_csv(csv)
-            if "q15" in list(df.columns):
-                others = df.loc[df["q15"] == "yes"]
+            if "Others" in list(df.columns):
+                others = df.loc[df["Others"] == 1]
                 others = others["output_path"].tolist()
                 for image in others:
                     img = cv2.imread(image)
-                    img = img[320:380, 640:970]
+                    img = img[635:705, 545:735]
                     dest = csv.replace("Results/Results.csv", "")
                     dest = dest.replace(os.getcwd(), "")
                     image = "/" + image
