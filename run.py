@@ -3,6 +3,7 @@ from pyzbar.pyzbar import decode
 import os
 import shutil
 import datetime
+import json
 
 import numpy as np
 import pandas as pd
@@ -10,7 +11,7 @@ from pathlib import Path
 from src.entry import entry_point
 from src.utils.interaction import wait_q
 
-def BarcodeReader(file):
+def BarcodeReader(file, Projects):
     image = "add-files/" + file
     img = cv2.imread(image)
     y, x, z = img.shape
@@ -35,9 +36,9 @@ def BarcodeReader(file):
     else:
         print(f"Barcode not found: {file}")
         if input("Would you like to enter manually (y/n): ") != 'n':
-            cv2.imshow('Enter barcode', PatientIdImage)
+            #cv2.imshow('Enter barcode', PatientIdImage)
             print(f"Showing '{file}'\nPress Q on image to continue.")
-            wait_q()
+            #wait_q()
             PatientIdText = input("Barcode: ")
         else:
             return 0
@@ -48,6 +49,7 @@ def BarcodeReader(file):
         os.makedirs(destDir)
     dest = destDir + PatientIdText + ".png"
     cv2.imwrite(dest, img)
+    Projects.add(side["Name"])
     return 1
 
 def MissingFileChecker():
@@ -96,7 +98,7 @@ def BackupImages():
     cwd = os.getcwd()
     inputsFolder = cwd + "/inputs/"
     time = datetime.datetime.now()
-    time_dir = time.strftime("%H:%M--(%d-%b-%Y)")
+    time_dir = time.strftime("%H:%M:%S--(%d-%b-%Y)")
     if not(os.path.exists("backup/")):
         os.mkdir("backup/")
     dirs = os.listdir(inputsFolder)
@@ -117,46 +119,54 @@ def BackupImages():
                             shutil.move(image, dest)
     #TODO: Move output files
 
-def CheckForOthers():
-    OutputFolder = os.getcwd() + "/outputs/"
-    Projects = os.listdir(OutputFolder)
-    Projects.sort()
+def CheckForOthers(project, page, item, x1, x2, y1, y2):
+    OutputFolder = os.getcwd() + "/outputs/" + project + "/" + page
+    csv = OutputFolder + "/Results/Results.csv"
+    df = pd.read_csv(csv)
+    if item in list(df.columns):
+        others = df.loc[df[item] == 1]
+        others = others["output_path"].tolist()
+        for image in others:
+            img = cv2.imread(image)
+            img = img[x1:x2, y1:y2]
+            dest = csv.replace("Results/Results.csv", "")
+            dest = dest.replace(os.getcwd(), "")
+            image = "/" + image
+            image = image.replace(dest, "")
+            image = image.replace("CheckedOMRs", "")
+            dest = dest + "OthersFolder"
+            dest = os.getcwd() + dest
+            if not(os.path.exists(dest)):
+                os.makedirs(dest)
+                dest += image
+                cv2.imwrite(dest, img)
+
+def CallForOthers(Projects):
     for project in Projects:
-        ProjectDir = OutputFolder + project + "/"
-        Pages = os.listdir(ProjectDir)
-        Pages.sort()
-        for page in Pages:
-            csv = ProjectDir + page + "/Results/Results.csv"
-            df = pd.read_csv(csv)
-            if "Others" in list(df.columns):
-                others = df.loc[df["Others"] == 1]
-                others = others["output_path"].tolist()
-                for image in others:
-                    img = cv2.imread(image)
-                    img = img[635:705, 545:735] #TODO: Add to JSON
-                    dest = csv.replace("Results/Results.csv", "")
-                    dest = dest.replace(os.getcwd(), "")
-                    image = "/" + image
-                    image = image.replace(dest, "")
-                    image = image.replace("CheckedOMRs", "")
-                    dest = dest + "OthersFolder"
-                    dest = os.getcwd() + dest
-                    if not(os.path.exists(dest)):
-                        os.makedirs(dest)
-                    dest += image
-                    cv2.imwrite(dest, img)
+        file = "config-json/" + project + ".json"
+        opened = open(file)
+        loaded = json.load(opened)
+        total_pages = loaded["total-pages"]
+        for i in range(1, total_pages + 1, 1):
+            page = f"Page{i}"
+            Page = loaded[page]
+            if Page["has-others"] == "yes":
+                Others = Page["others"]
+                for item in Others:
+                    x1, x2, y1, y2 = Others[item]['x1'], Others[item]['x2'], Others[item]['y1'], Others[item]['y2']
+                    CheckForOthers(project, page, item, x1, x2, y1, y2)
 
 if __name__ == "__main__":
     folder = "add-files/"
     files = os.listdir(folder)
+    Projects = set()
 
     for file in files:
         if file.endswith('.png'):
-            BarcodeReader(file)
-
+            BarcodeReader(file, Projects)
     MissingFileChecker()
     ans = str(input("Would you like to continue (y/n): "))
     if ans != 'n':
         entry_point(Path('inputs'), {'input_paths': ['inputs'], 'debug': True, 'output_dir': 'outputs', 'autoAlign': False, 'setLayout': False})
+        CallForOthers(Projects)
         BackupImages()
-        CheckForOthers()
