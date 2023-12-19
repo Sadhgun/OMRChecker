@@ -194,7 +194,7 @@ def show_template_layouts(omr_files, template, tuning_config):
             f"Template Layout: {file_name}", template_layout, 1, 1, config=tuning_config, returnImage=True
         )
         imgOut = file_path[:-4] + "SetLayout.png"
-        cv2.imwrite(imgOut, img)
+        cv2.imwrite(imgOut, template_layout)
 
 
 def process_files(
