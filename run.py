@@ -136,6 +136,11 @@ def CaptureOthersBox(project, page, item, x1, x2, y1, y2):
     for image in others:
         img = cv2.imread(image)
         img = img[x1:x2, y1:y2]
+        if input(f"Would you like to enter other image text manually for {image} (y/n): ") != 'n':
+            cv2.imshow('Enter text', img)
+            print(f"Showing '{image}'\nPress Q on image to continue.")
+            wait_q()
+            text = input("Enter text: ")
         dest = csv.replace("Results/Results.csv", "")
         dest = dest.replace(os.getcwd(), "")
         image = "/" + image
