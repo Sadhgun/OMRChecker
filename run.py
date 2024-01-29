@@ -146,7 +146,7 @@ def CaptureOthersBox(project, page, item, x1, x2, y1, y2):
         image = "/" + image
         image = image.replace(dest, "")
         image = image.replace("CheckedOMRs", "")
-        dest = dest + "OthersFolder"
+        dest = dest + "OthersFolder/" + item # TODO: Check if itmoves to a subfolder in OthersFolder
         dest = os.getcwd() + dest
         if not(os.path.exists(dest)):
             os.makedirs(dest)
