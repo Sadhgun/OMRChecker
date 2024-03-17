@@ -9,8 +9,8 @@ def QRGenerate(name, i):
         box_size=10,
         border=0
     )
-    qrInfo = {"Name": name, "Page No": i}
-    qr.add_data(str(qrInfo))
+    qrStr = {"Name": name, "Page No": i}
+    qr.add_data(str(qrStr))
     qr.make()
     img = qr.make_image(fill_color="black", back_color="white")
     width, height = img.size
