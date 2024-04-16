@@ -4,17 +4,17 @@ from PIL import Image
 from src.extras.qrcodeGen import QRGenerate
 import csv
 
-#Start and Stop numbers
 #Individual forms with no csv
 
 if __name__ == "__main__":
     form = "Forms/Symptom Registry JSS/Page1/OMR Sheet.png"
-    csvfile = open("Forms/Symptom Registry JSS/CSVs/List.csv", 'w')
+    start = int(input("Start number: "))
+    end = int(input("End number: "))
+    csvfile = open(f"Forms/Symptom Registry JSS/CSVs/List{start}-{end}.csv", 'w')
     headers = ["QR Code", "Patient ID"]
     csvwriter = csv.writer(csvfile)
     csvwriter.writerow(headers)
-    total = int(input("Enter number of forms required: "))
-    for i in range(1, total + 1):
+    for i in range(start, end + 1):
         box = QRGenerate(str(i), str(i))
         box.thumbnail((110, 110))
         blankForm = Image.open(form)
