@@ -660,7 +660,7 @@ class ImageInstanceOps:
             )
             # If not confident, then only take help of global_thr
             if max1 < confident_jump:
-                if no_outliers:
+                if no_outliers or thr1 == 255:
                     # All Black or All White case
                     thr1 = global_thr
                 else:

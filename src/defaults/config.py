@@ -5,8 +5,8 @@ CONFIG_DEFAULTS = DotMap(
         "dimensions": {
             "display_height": 2480,
             "display_width": 1640,
-            "processing_height": 820,
-            "processing_width": 666,
+            "processing_height": 3280,
+            "processing_width": 2664,
         },
         "threshold_params": {
             "GAMMA_LOW": 0.7,
@@ -25,7 +25,7 @@ CONFIG_DEFAULTS = DotMap(
             "thickness": 3,
         },
         "outputs": {
-            "show_image_level": 0,
+            "show_image_level": 5,
             "save_image_level": 0,
             "save_detections": True,
             "filter_out_multimarked_files": False,
