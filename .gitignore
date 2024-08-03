@@ -20,3 +20,4 @@ config-json/*
 inputs/*
 outputs/*
 Forms/*
+venv/
