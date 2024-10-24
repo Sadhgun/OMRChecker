@@ -1,5 +1,4 @@
 import cv2
-from pyzbar.pyzbar import decode
 import os
 import shutil
 import datetime
@@ -10,47 +9,8 @@ import pandas as pd
 from pathlib import Path
 from src.entry import entry_point
 from src.utils.interaction import wait_q
-
-def BarcodeReader(file, Projects):
-    image = "add-files/" + file
-    img = cv2.imread(image)
-    y, x, z = img.shape
-    SideImage = img[0:y // 2, x // 2:x] #Reads page side
-    side = decode(SideImage)
-    if len(side) == 1:
-        side = eval(((side[0]).data).decode("utf-8"))
-    else:
-        if y / x >= 1: #Checks if page is vertical
-            img = cv2.rotate(img, cv2.ROTATE_180)
-            SideImage = img[0:y // 2, x // 2:x]
-            side = decode(SideImage)
-        side = eval(((side[0]).data).decode("utf-8"))
-
-    PatientIdImage = img[0:y // 2, 0:x // 2] #Reads patient id
-    PatientId = decode(PatientIdImage)
-    if len(PatientId) == 1:
-        PatientIdText = ((PatientId[0]).data).decode("utf-8")
-        img = cv2.polylines(img, [np.array(PatientId[0].polygon)], True, (0, 255, 0), 5)
-        write = "Read barcode: " + PatientIdText
-        img = cv2.putText(img, write, (100, 260), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3, cv2.LINE_AA)
-    else:
-        print(f"Barcode not found: {file}")
-        if input("Would you like to enter manually (y/n): ") != 'n':
-            #cv2.imshow('Enter barcode', PatientIdImage)
-            print(f"Showing '{file}'\nPress Q on image to continue.")
-            #wait_q()
-            PatientIdText = input("Barcode: ")
-        else:
-            return 0
-    
-    #Sort image into input folders
-    destDir = "inputs/" + side["Name"] + "/Page" + str(side["Page No"]) + "/"
-    if not(os.path.exists(destDir)):
-        os.makedirs(destDir)
-    dest = destDir + PatientIdText + ".png"
-    cv2.imwrite(dest, img)
-    Projects.add(side["Name"])
-    return 1
+from src.extras.cropping import Cropper
+from barcodeReader import BarcodeReader
 
 def MissingFileChecker():
     cwd = os.getcwd()
@@ -60,7 +20,7 @@ def MissingFileChecker():
     dirs = os.listdir(inputsFolder)
     for dir in dirs:
         projectName = inputsFolder + dir
-        if os.path.isdir(projectName):
+        if os.path.isdir(projectName): # if not os.path.isdir(projectName): continue
             imageLists = []
             subDirs = os.listdir(projectName)
             subDirs.sort()
@@ -76,7 +36,7 @@ def MissingFileChecker():
     totalPages = len(imageLists)
     if totalPages > 1:
         differenceDict = {}
-        for i in range(totalPages):
+        for i in range(totalPages): # Make a seperate function for this
             for n in range(i + 1, totalPages):
                 frontDiff = list(set(imageLists[n]).difference(imageLists[i]))
                 backDiff = list(set(imageLists[i]).difference(imageLists[n]))
@@ -168,6 +128,17 @@ def CallForOthers(Projects):
                     x1, x2, y1, y2 = Others[item]['x1'], Others[item]['x2'], Others[item]['y1'], Others[item]['y2']
                     CaptureOthersBox(project, page, item, x1, x2, y1, y2)
 
+def MasterResults(Projects):
+    for project in Projects:
+        folder = "Results/" + project
+        if not(os.path.exists(folder)):
+            os.mkdir(folder)
+        file = folder + "/Master-Result.csv"
+        if not(os.path.exists(file)):
+            with open(file, 'w') as file:
+                file.close
+        
+
 if __name__ == "__main__":
     folder = "add-files/"
     files = os.listdir(folder)
@@ -175,10 +146,18 @@ if __name__ == "__main__":
 
     for file in files:
         if file.endswith('.png'):
-            BarcodeReader(file, Projects)
+            print(file)
+            imageFile = folder + file
+            destFile = "Cropped/" + file
+            if Cropper(imageFile, destFile):
+                PatientId, projectName = BarcodeReader(file)
+                Projects.add(projectName)
+                print(PatientId)
+                print(projectName)
     MissingFileChecker()
     ans = str(input("Would you like to continue (y/n): "))
     if ans != 'n':
         entry_point(Path('inputs'), {'input_paths': ['inputs'], 'debug': True, 'output_dir': 'outputs', 'autoAlign': False, 'setLayout': False})
         CallForOthers(Projects)
+        MasterResults(Projects)
         BackupImages()

@@ -1,6 +1,6 @@
 import os
 from PIL import ImageDraw, Image, ImageFont
-from qrcodeGen import QRGenerate
+from src.extras.qrcodeGen import QRGenerate
 
 if __name__ == "__main__":
     name = input("Enter name of study: ")
